@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { AudioLines, Bell, BellOff, Check, ChevronDown, CircleHelp, Crown, ExternalLink, Headphones, MessageCircle, Mic2, Monitor, Moon, Radio, Settings2, ShieldCheck, Smartphone, Sparkles, Star, Volume2, VolumeX, Wifi, WifiOff, Youtube } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API = import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:4000'
+    : window.location.origin);
 const demoMessages = [
   { id: 'd1', author: 'pixelpirate', text: 'That was such a clean play!! 🔥', publishedAt: new Date(Date.now()-42000).toISOString(), isMember: true },
   { id: 'd2', author: 'MiraPlays', text: 'How long have you been practicing this map?', publishedAt: new Date(Date.now()-31000).toISOString() },

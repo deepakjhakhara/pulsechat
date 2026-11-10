@@ -1,4 +1,5 @@
-
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import 'dotenv/config';
 import express from 'express';
 import http from 'node:http';
@@ -8,7 +9,12 @@ import { Server } from 'socket.io';
 import { google } from 'googleapis';
 import { randomBytes } from 'node:crypto';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 const server = http.createServer(app);
 
 const PORT = Number(process.env.PORT || 4000);
@@ -41,7 +47,7 @@ const sessionMiddleware = session({
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000
   }
 });
@@ -437,6 +443,20 @@ const live = broadcasts.data.items?.find(
   });
 
   poll();
+});
+
+// Serve React frontend in production
+const clientDistPath = path.resolve(__dirname, '../client/dist');
+
+app.use(express.static(clientDistPath));
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') ||
+      req.path.startsWith('/auth/')) {
+    return next();
+  }
+
+  res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
 // Start server
